@@ -1,0 +1,27 @@
+server {
+	listen 443 ssl;
+	listen [::]:443 ssl;
+	ssl on;
+	ssl_certificate /etc/ssl/certs/nginx-selfsigned.crt;
+	ssl_certificate_key /etc/ssl/private/nginx-selfsigned.key;
+	server_name _;
+	root /var/www/html;
+	index  index.php index.nginx-debian.html;
+	#autoindex on;
+	location / {
+		try_files $uri $uri/ =404;
+	}
+	location ~* \.php$ {
+		fastcgi_pass unix:/run/php/php7.3-fpm.sock;
+		include         fastcgi_params;
+		fastcgi_param   SCRIPT_FILENAME    $document_root$fastcgi_script_name;
+		fastcgi_param   SCRIPT_NAME        $fastcgi_script_name;
+	}
+}
+
+server {
+	listen 80 default_server;
+	listen [::]:80 default_server;
+	server_name localhost;
+	return 302 https://$host$request_uri;
+}
